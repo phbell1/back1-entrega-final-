@@ -1,4 +1,4 @@
-//PRIMERA PRE-ENTREGA BACKEND 1
+//ENTREGA FINAL BACKEND 1
 
 import express from "express";
 
@@ -26,7 +26,8 @@ app.use("/", viewsRouter);
 
 
 
-app.listen(PORT, () => {
+const httpServer = app.listen(PORT, () => {
     console.log(`escuchando en el puerto ${PORT}`);
 })
  
+const socket = new Socket(httpServer);
