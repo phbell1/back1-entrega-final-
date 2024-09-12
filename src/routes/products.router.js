@@ -1,8 +1,8 @@
 import { Router } from "express";
-import ProductManager from "../controllers/product-manager.js";
+import ProductManager from "../dao/db/product-manager.db.js";
 
 const router = Router();
-const manager = new ProductManager("./src/data/products.json");
+const manager = new ProductManager();
 
 
 router.get("/", async (req, res) => {
@@ -12,33 +12,58 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:pid", async (req, res) => {
-    let id = req.params.pid;
+    try {
+        let id = req.params.pid;
 
-    const producto = await manager.getProductsbyId(parseInt(id));
-    if (!producto) {
-        res.send("Producto Inexistente")
-    } else {
-        res.send(producto);
+        const producto = await manager.getProductsbyId(id);
+        if (!producto) {
+            res.send("Producto Inexistente")
+        } else {
+            res.send(producto);
+        }
+    } catch (error) {
+        res.send("Error al buscar id en productos")
     }
+
 })
 
 router.post("/", async (req, res) => {
     const nuevoProducto = req.body;
-    await manager.addProduct(nuevoProducto);
-    res.send("Producto Agregado Con Exito");
+    try {
+        await manager.addProduct(nuevoProducto);
+        res.status(201).json({
+            message: "Producto Agregado Exitosamente"
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Error interno del servidor" })
+    }
+
 })
 
 router.put("/:pid", async (req, res) => {
-    let id = req.params.pid;
+    const id = req.params.pid;
     const prodUpdate = req.body;
-    await manager.updateProduct(parseInt(id),prodUpdate);
-    res.send("Producto Modificado Exitosamente");
+    try {
+        await manager.updateProduct(id, prodUpdate);
+        res.status(201).json({
+            message: "Producto Actualizado Exitosamente"
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Error interno del servidor" })
+    }
 })
 
 router.delete("/:pid", async (req, res) => {
     let id = req.params.pid;
-    await manager.deleteProduct(parseInt(id));
-    res.send("Producto Eliminado Exitosamente");
+    try {
+        await manager.deleteProduct(id);
+        res.status(201).json({
+            message: "Producto Eliminado Exitosamente"
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Error interno del servidor" })
+    }
+
 })
 
 

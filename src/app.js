@@ -9,7 +9,8 @@ import productsRouter from "./routes/products.router.js";
 import cartsRouter from "./routes/carts.router.js";
 import viewsRouter from "./routes/views.router.js";
 import { engine } from "express-handlebars";
-import { Socket } from "socket.io";
+import { Server } from "socket.io";
+import "./database.js";
 
 
 app.engine("handlebars", engine());
@@ -18,7 +19,7 @@ app.set("views", "./src/views");
 
 
 app.use(express.json());
-app.use(express.static("./src/public"));
+app.use(express.static("./src/public")); 
 
 app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
@@ -29,5 +30,4 @@ app.use("/", viewsRouter);
 const httpServer = app.listen(PORT, () => {
     console.log(`escuchando en el puerto ${PORT}`);
 })
- 
-const socket = new Socket(httpServer);
+

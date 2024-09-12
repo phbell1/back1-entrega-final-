@@ -1,39 +1,48 @@
 import { Router } from "express";
-import CartManager from "../controllers/cart-manager.js";
+import CartManager from "../dao/db/cart-manager.db.js";
 
 const router = Router();
 
-const cartManager = new CartManager("./src/data/carts.json");
+const cartManager = new CartManager();
 
 router.post("/", async (req, res) => {
-    const newCart = await cartManager.createCart();
-    res.send(newCart);
+    try {
+        const newCart = await cartManager.createCart();
+        res.json(newCart);
+    } catch (error) {
+        res.status(500).send("Error del servidor");
+    }
+
 })
 
 router.get("/:cid", async (req, res) => {
-    const cartId = parseInt(req.params.cid);
-    const cartSearch = await cartManager.getCartById(cartId);
-    res.send(cartSearch.products);
+    const cartId = req.params.cid;
+    try {
+        const cartSearch = await cartManager.getCartById(cartId);
+        res.json(cartSearch.products);
+    } catch (error) {
+        res.status(500).send("Error del servidor");
+    }
+
 })
 
-router.post("/:cid/product/:pid", async (req, res) => {  
-    try {  
-        const cartId = parseInt(req.params.cid);  
-        const prodId = req.params.pid;  
-        const quant = req.body.quant !== undefined ? req.body.quant : 1;  
+router.post("/:cid/product/:pid", async (req, res) => {
+    let cartId = req.params.cid;
+    const prodId = req.params.pid;
+    const quant = req.body.quant || 1;
 
-    
-        const cart = await cartManager.getCartById(cartId);  
-        if (!cart) {  
-            return res.status(404).send({ error: "Carrito no encontrado." });  
-        }  
+    try {
+        const cart = await cartManager.getCartById(cartId);
+        if (!cart) {
+            return res.status(404).send({ error: "Carrito no encontrado." });
+        }
 
-        const cartUpdated = await cartManager.addCartItem(cartId, prodId, quant);  
-        
-        res.send(cartUpdated.products);  
-    } catch (error) {   
-        res.status(500).send({ error: "Error al cargar el producto al carrito" });  
-    }  
+        const cartUpdated = await cartManager.addCartItem(cartId, prodId, quant);
+
+        res.json(cartUpdated.products);
+    } catch (error) {
+        res.status(500).send({ error: "Error al cargar el producto al carrito" });
+    }
 })
 
 export default router;
