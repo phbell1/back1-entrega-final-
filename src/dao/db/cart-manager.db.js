@@ -3,13 +3,6 @@ import CartModel from "../models/cart.model.js";
 class CartManager {
 
 
-    async laodArray() {
-        const data = await this.leerArchivo();
-        if (this.carts.length > 0) {
-            this.ultId = Math.max(...this.carts.map(cart => cart.id));
-        }
-    }
-
     async createCart() {
         try {
             const newCart = new CartModel({ products: [] })
@@ -38,23 +31,76 @@ class CartManager {
         try {
             const cart = await this.getCartById(cartId);
             if (!cart) {
-                console.log("Carrito Inexistente");
+                throw new Error("Carrito Inexistente");
             }
             const prodExist = cart.products.find(prod => prod.product.toString() === productId);
             if (prodExist) {
-                prodExist.quant += quant;
+                prodExist.quantity += quant;
+                console.log("operacion exitosa");
             } else {
-                cart.products.push({ product: productId, quant });
+                cart.products.push({ product: productId, quantity: quant });
             }
-            
+
             cart.markModified("products");
             await cart.save();
             return cart;
 
         } catch (error) {
-            console.log("Error al agregar item al carrito");
+            console.log("Error al agregar item al carrito", error);
         }
     }
+
+
+
+    async updateProductQuant(cartId, productId, newQuantity) {
+        if (!cartId || !productId || newQuantity == null || newQuantity < 0) {
+            throw new Error("se requiere cartId, productId y newQuantity mayor o igual a 0.");
+        }
+
+        try {
+            const cart = await CartModel.findOneAndUpdate(
+                { _id: cartId, "products.product": productId },
+                { $set: { "products.$.quantity": newQuantity } },
+                { new: true }
+            );
+
+            if (!cart) {
+                throw new Error("Carrito no encontrado o producto inexistente en el carrito.");
+            }
+
+            return cart; 
+        } catch (error) {
+            console.error("Error al actualizar la cantidad del producto:", error);
+            throw error;
+        }
+    }
+
+
+
+
+    async clearCart(cartId) {
+        if (!cartId) {
+            throw new Error("Se requiere cartId.");
+        }
+
+        try {
+            const updatedCart = await CartModel.findOneAndUpdate(
+                { _id: cartId },
+                { $set: { products: [] } },
+                { new: true }
+            );
+
+            if (!updatedCart) {
+                throw new Error("Carrito no encontrado.");
+            }
+
+            return updatedCart; 
+        } catch (error) {
+            console.error("Error al vaciar el carrito:", error);
+            throw error;
+        }
+    }
+
 
 
 }

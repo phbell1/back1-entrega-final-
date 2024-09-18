@@ -39,7 +39,7 @@ class ProductManager {
 
 
     async getProducts() {
-        const arrayProductos = await productModel.find();
+        const arrayProductos = await productModel.find().lean();
         return arrayProductos;
 
     }
@@ -48,12 +48,12 @@ class ProductManager {
         try {
             const prodBuscado = await productModel.findById(id);
 
-            if (!buscado) {
+            if (!prodBuscado) {
                 console.log("producto no encontrado");
                 return null;
             } else {
                 console.log("producto encontrado");
-                return buscado;
+                return prodBuscado;
             }
         } catch (error) {
             console.log("Error al buscar por id", error);
